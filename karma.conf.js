@@ -44,7 +44,7 @@ module.exports = function(config) {
       dir: '.build/coverage',
       reporters: [{ type: 'html' }, { type: 'text' }, { type: 'lcov' }],
     },
-    browsers: ['Chrome'],
+    browsers: ['Safari'],
     customLaunchers: {
       'saucelabs-chrome': {
         base: 'SauceLabs',

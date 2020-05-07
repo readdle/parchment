@@ -194,10 +194,22 @@ class ContainerBlot extends ShadowBlot implements Parent {
   update(mutations: MutationRecord[], context: { [key: string]: any }): void {
     let addedNodes: Node[] = [];
     let removedNodes: Node[] = [];
+    let charactedDataWorkaroundRequired = /Macintosh/.test(navigator.userAgent);
     mutations.forEach(mutation => {
       if (mutation.target === this.domNode && mutation.type === 'childList') {
         addedNodes.push.apply(addedNodes, mutation.addedNodes);
         removedNodes.push.apply(removedNodes, mutation.removedNodes);
+      }
+      if (
+        charactedDataWorkaroundRequired &&
+        mutation.type === 'characterData' && 
+        mutation.target.parentNode === this.domNode &&
+        mutation.oldValue === '' && 
+        mutation.target.nodeValue && 
+        mutation.target.nodeValue.length > 0 && 
+        Registry.find(mutation.target) == null
+      ) {
+        addedNodes.push.apply(addedNodes, [mutation.target]);
       }
     });
     removedNodes.forEach((node: Node) => {

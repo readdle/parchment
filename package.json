@@ -20,6 +20,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.1.1",
+    "karma-safari-applescript-launcher": "github:readdle/karma-safari-applescript-launcher#feat/clear_history",
     "karma-sauce-launcher": "^1.2.0",
     "karma-webpack": "^2.0.9",
     "ts-loader": "^3.4.0",

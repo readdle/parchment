@@ -393,6 +393,17 @@ describe('Lifecycle', function() {
         expect(attrBlot.formats()).toEqual({ color: 'blue', italic: true });
         this.checkValues(['Test', '|', { image: true }, 'ing', '!']);
       });
+
+       //Safari sometimes forget to send childList mutation when adding empty text node 
+      it('text changes with incorrect mutation', function() {
+        let attrBlot = this.descendants[1];
+        let textNode = document.createTextNode('|');
+        attrBlot.domNode.insertBefore(textNode, attrBlot.domNode.childNodes[1]);
+        let mutationRecord = {type: 'characterData', target: textNode, oldValue: ''}
+        this.container.update([mutationRecord]);
+        this.checkUpdateCalls(attrBlot);
+        this.checkValues(['Test', '|', { image: true }, 'ing', '!']);
+      });
     });
   });
 });

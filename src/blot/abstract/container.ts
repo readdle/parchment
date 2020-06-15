@@ -1,7 +1,9 @@
-import { Blot, Parent, Leaf } from './blot';
+import { Blot, BlotConstructor, Parent, Leaf, Root } from './blot';
 import LinkedList from '../../collection/linked-list';
 import ShadowBlot from './shadow';
-import * as Registry from '../../registry';
+import ParchmentError from '../../error';
+import Registry from '../../registry';
+import Scope from '../../scope';
 
 class ContainerBlot extends ShadowBlot implements Parent {
   static defaultChild: string;
@@ -10,8 +12,8 @@ class ContainerBlot extends ShadowBlot implements Parent {
   children!: LinkedList<Blot>;
   domNode!: HTMLElement;
 
-  constructor(domNode: Node) {
-    super(domNode);
+  constructor(scroll: Root, domNode: Node) {
+    super(scroll, domNode);
     this.build();
   }
 
@@ -34,10 +36,10 @@ class ContainerBlot extends ShadowBlot implements Parent {
       .reverse()
       .forEach((node: Node) => {
         try {
-          let child = makeBlot(node);
+          let child = makeBlot(node, this.scroll);
           this.insertBefore(child, this.children.head || undefined);
         } catch (err) {
-          if (err instanceof Registry.ParchmentError) return;
+          if (err instanceof ParchmentError) return;
           else throw err;
         }
       });
@@ -106,7 +108,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
     if (child) {
       child.insertAt(offset, value, def);
     } else {
-      let blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+      let blot = def == null ? this.scroll.create('text', value) : this.scroll.create(value, def);
       this.appendChild(blot);
     }
   }
@@ -114,11 +116,11 @@ class ContainerBlot extends ShadowBlot implements Parent {
   insertBefore(childBlot: Blot, refBlot?: Blot): void {
     if (
       this.statics.allowedChildren != null &&
-      !this.statics.allowedChildren.some(function(child: Registry.BlotConstructor) {
+      !this.statics.allowedChildren.some(function(child: BlotConstructor) {
         return childBlot instanceof child;
       })
     ) {
-      throw new Registry.ParchmentError(
+      throw new ParchmentError(
         `Cannot insert ${(<ShadowBlot>childBlot).statics.blotName} into ${this.statics.blotName}`,
       );
     }
@@ -141,7 +143,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
     super.optimize(context);
     if (this.children.length === 0) {
       if (this.statics.defaultChild != null) {
-        let child = Registry.create(this.statics.defaultChild);
+        let child = this.scroll.create(this.statics.defaultChild);
         this.appendChild(child);
         child.optimize(context);
       } else {
@@ -207,7 +209,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
         mutation.oldValue === '' && 
         mutation.target.nodeValue && 
         mutation.target.nodeValue.length > 0 && 
-        Registry.find(mutation.target) == null
+        this.scroll.find(mutation.target) == null
       ) {
         addedNodes.push.apply(addedNodes, [mutation.target]);
       }
@@ -224,7 +226,7 @@ class ContainerBlot extends ShadowBlot implements Parent {
       ) {
         return;
       }
-      let blot = Registry.find(node);
+      let blot = this.scroll.find(node);
       if (blot == null) return;
       if (blot.domNode.parentNode == null || blot.domNode.parentNode === this.domNode) {
         blot.detach();
@@ -244,9 +246,9 @@ class ContainerBlot extends ShadowBlot implements Parent {
       .forEach(node => {
         let refBlot: Blot | null = null;
         if (node.nextSibling != null) {
-          refBlot = Registry.find(node.nextSibling);
+          refBlot = this.scroll.find(node.nextSibling);
         }
-        let blot = makeBlot(node);
+        let blot = makeBlot(node, this.scroll);
         if (blot.next != refBlot || blot.next == null) {
           if (blot.parent != null) {
             blot.parent.removeChild(this);
@@ -257,13 +259,13 @@ class ContainerBlot extends ShadowBlot implements Parent {
   }
 }
 
-function makeBlot(node: Node): Blot {
-  let blot = Registry.find(node);
+function makeBlot(node: Node, scroll: Root): Blot {
+  let blot = scroll.find(node);
   if (blot == null) {
     try {
-      blot = Registry.create(node);
+      blot = scroll.create(node);
     } catch (e) {
-      blot = Registry.create(Registry.Scope.INLINE);
+      blot = <Blot>scroll.create(Scope.INLINE);
       [].slice.call(node.childNodes).forEach(function(child: Node) {
         // @ts-ignore
         blot.domNode.appendChild(child);
@@ -274,7 +276,7 @@ function makeBlot(node: Node): Blot {
       blot.attach();
     }
   }
-  return blot;
+  return <Blot>blot;
 }
 
 export default ContainerBlot;

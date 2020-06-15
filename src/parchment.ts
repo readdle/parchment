@@ -14,15 +14,12 @@ import ClassAttributor from './attributor/class';
 import StyleAttributor from './attributor/style';
 import AttributorStore from './attributor/store';
 
-import * as Registry from './registry';
+import Registry from './registry';
+import Scope from './scope';
 
 let Parchment = {
-  Scope: Registry.Scope,
-
-  create: Registry.create,
-  find: Registry.find,
-  query: Registry.query,
-  register: Registry.register,
+  Registry: Registry,
+  Scope: Scope,
 
   Container: ContainerBlot,
   Format: FormatBlot,

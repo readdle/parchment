@@ -4,7 +4,7 @@ describe('Container', function() {
   beforeEach(function() {
     let node = document.createElement('p');
     node.innerHTML = '<span>0</span><em>1<strong>2</strong><img></em>4';
-    this.blot = Registry.create(node);
+    this.blot = TestRegistry.create(this.scroll, node);
   });
 
   describe('descendants()', function() {
@@ -64,20 +64,20 @@ describe('Container', function() {
   });
 
   it('detach()', function() {
-    expect(this.blot.domNode[Registry.DATA_KEY]).toEqual({ blot: this.blot });
+    expect(this.blot.domNode[BLOT_LINK_KEY]).toEqual({ blot: this.blot });
     expect(this.blot.descendants(ShadowBlot).length).toEqual(8);
     this.blot.detach();
-    expect(this.blot.domNode[Registry.DATA_KEY]).toEqual(undefined);
+    expect(this.blot.domNode[BLOT_LINK_KEY]).toEqual(undefined);
     this.blot.descendants(ShadowBlot).forEach(blot => {
-      expect(this.blot.domNode[Registry.DATA_KEY]).toEqual(undefined);
+      expect(this.blot.domNode[BLOT_LINK_KEY]).toEqual(undefined);
     });
   });
 
   it('attach unknown blot', function() {
     let node = document.createElement('p');
     node.appendChild(document.createElement('input'));
-    expect(function() {
-      Registry.create(node);
+    expect(() => {
+      this.scroll.create(node);
     }).not.toThrowError(/\[Parchment\]/);
   });
 
@@ -85,8 +85,8 @@ describe('Container', function() {
     HeaderBlot.allowedChildren = [BoldBlot];
     let node = document.createElement('h1');
     node.innerHTML = 'Test';
-    expect(function() {
-      let blot = Registry.create(node);
+    expect(() => {
+      let blot = this.scroll.create(node);
       blot.insertAt(2, 'image', true);
     }).toThrowError(/\[Parchment\]/);
     HeaderBlot.allowedChildren = undefined;

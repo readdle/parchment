@@ -1,14 +1,14 @@
 import Attributor from '../../attributor/attributor';
 import AttributorStore from '../../attributor/store';
-import { Blot, Parent, Formattable } from './blot';
+import { Blot, BlotConstructor, Parent, Formattable, Root } from './blot';
 import ContainerBlot from './container';
 import ShadowBlot from './shadow';
-import * as Registry from '../../registry';
+import Scope from '../../scope';
 
 class FormatBlot extends ContainerBlot implements Formattable {
   protected attributes: AttributorStore;
 
-  static formats(domNode: HTMLElement): any {
+  static formats(domNode: HTMLElement, scroll: Root): any {
     if (typeof this.tagName === 'string') {
       return true;
     } else if (Array.isArray(this.tagName)) {
@@ -17,17 +17,17 @@ class FormatBlot extends ContainerBlot implements Formattable {
     return undefined;
   }
 
-  constructor(domNode: Node) {
-    super(domNode);
+  constructor(scroll: Root, domNode: Node) {
+    super(scroll, domNode);
     this.attributes = new AttributorStore(this.domNode);
   }
 
   format(name: string, value: any): void {
-    let format = Registry.query(name);
+    let format = this.scroll.query(name);
     if (format instanceof Attributor) {
       this.attributes.attribute(format, value);
     } else if (value) {
-      if (format != null && (name !== this.statics.blotName || this.formats()[name] !== value)) {
+      if (name !== this.statics.blotName || this.formats()[name] !== value) {
         this.replaceWith(name, value);
       }
     }
@@ -35,7 +35,7 @@ class FormatBlot extends ContainerBlot implements Formattable {
 
   formats(): { [index: string]: any } {
     let formats = this.attributes.values();
-    let format = this.statics.formats(this.domNode);
+    let format = this.statics.formats(this.domNode, this.scroll);
     if (format != null) {
       formats[this.statics.blotName] = format;
     }

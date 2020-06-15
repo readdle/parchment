@@ -1,8 +1,8 @@
 import { Leaf } from './blot';
 import ShadowBlot from './shadow';
-import * as Registry from '../../registry';
+import Scope from '../../scope';
 declare class LeafBlot extends ShadowBlot implements Leaf {
-    static scope: Registry.Scope;
+    static scope: Scope;
     static value(domNode: Node): any;
     index(node: Node, offset: number): number;
     position(index: number, inclusive?: boolean): [Node, number];

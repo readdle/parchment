@@ -10,13 +10,11 @@ import Attributor from './attributor/attributor';
 import ClassAttributor from './attributor/class';
 import StyleAttributor from './attributor/style';
 import AttributorStore from './attributor/store';
-import * as Registry from './registry';
+import Registry from './registry';
+import Scope from './scope';
 declare let Parchment: {
-    Scope: typeof Registry.Scope;
-    create: typeof Registry.create;
-    find: typeof Registry.find;
-    query: typeof Registry.query;
-    register: typeof Registry.register;
+    Registry: typeof Registry;
+    Scope: typeof Scope;
     Container: typeof ContainerBlot;
     Format: typeof FormatBlot;
     Leaf: typeof LeafBlot;

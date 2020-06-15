@@ -1,4 +1,4 @@
-import { Blot, Parent } from './blot';
+import { Blot, Parent, Root } from './blot';
 import LinkedList from '../../collection/linked-list';
 import ShadowBlot from './shadow';
 declare class ContainerBlot extends ShadowBlot implements Parent {
@@ -6,7 +6,7 @@ declare class ContainerBlot extends ShadowBlot implements Parent {
     static allowedChildren: any[];
     children: LinkedList<Blot>;
     domNode: HTMLElement;
-    constructor(domNode: Node);
+    constructor(scroll: Root, domNode: Node);
     appendChild(other: Blot): void;
     attach(): void;
     build(): void;

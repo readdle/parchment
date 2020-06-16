@@ -1,7 +1,10 @@
-import { Blot } from './abstract/blot';
+import Attributor from '../attributor/attributor';
+import { BlotConstructor, Blot, Root } from './abstract/blot';
 import ContainerBlot from './abstract/container';
 import LinkedList from '../collection/linked-list';
-import * as Registry from '../registry';
+import ParchmentError from '../error';
+import Registry, { BLOT_LINK_KEY } from '../registry';
+import Scope from '../scope';
 
 const OBSERVER_CONFIG = {
   attributes: true,
@@ -16,19 +19,47 @@ const MAX_OPTIMIZE_ITERATIONS = 100;
 class ScrollBlot extends ContainerBlot {
   static blotName = 'scroll';
   static defaultChild = 'block';
-  static scope = Registry.Scope.BLOCK_BLOT;
+  static scope = Scope.BLOCK_BLOT;
   static tagName = 'DIV';
 
+  registry: Registry;
   observer: MutationObserver;
 
-  constructor(node: HTMLDivElement) {
-    super(node);
+  constructor(registry: Registry, node: HTMLDivElement) {
+    // @ts-ignore
+    super(null, node);
+    this.registry = registry;
     this.scroll = this;
+    this.build();
     this.observer = new MutationObserver((mutations: MutationRecord[]) => {
       this.update(mutations);
     });
     this.observer.observe(this.domNode, OBSERVER_CONFIG);
     this.attach();
+  }
+
+  create(input: Node | string | Scope, value?: any): Blot {
+    return this.registry.create(this, input, value);
+  }
+
+  find(node: Node | null, bubble: boolean = false): Blot | null {
+    return this.registry.find(node, bubble);
+  }
+
+  query(
+    query: string | Node | Scope,
+    scope: Scope = Scope.ANY,
+  ): Attributor | BlotConstructor | null {
+    return this.registry.query(query, scope);
+  }
+
+  register(...Definitions: any[]): any {
+    return this.registry.register(...Definitions);
+  }
+
+  build() {
+    if (this.scroll == null) return;
+    super.build();
   }
 
   detach() {
@@ -71,9 +102,9 @@ class ScrollBlot extends ContainerBlot {
       if (blot == null || blot === this) return;
       if (blot.domNode.parentNode == null) return;
       // @ts-ignore
-      if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+      if (blot.domNode[BLOT_LINK_KEY].mutations == null) {
         // @ts-ignore
-        blot.domNode[Registry.DATA_KEY].mutations = [];
+        blot.domNode[BLOT_LINK_KEY].mutations = [];
       }
       if (markParent) mark(blot.parent);
     };
@@ -81,9 +112,9 @@ class ScrollBlot extends ContainerBlot {
       // Post-order traversal
       if (
         // @ts-ignore
-        blot.domNode[Registry.DATA_KEY] == null ||
+        blot.domNode[BLOT_LINK_KEY] == null ||
         // @ts-ignore
-        blot.domNode[Registry.DATA_KEY].mutations == null
+        blot.domNode[BLOT_LINK_KEY].mutations == null
       ) {
         return;
       }
@@ -97,14 +128,14 @@ class ScrollBlot extends ContainerBlot {
       if (i >= MAX_OPTIMIZE_ITERATIONS) {
         throw new Error('[Parchment] Maximum optimize iterations reached');
       }
-      remaining.forEach(function(mutation: MutationRecord) {
-        let blot = Registry.find(mutation.target, true);
+      remaining.forEach((mutation: MutationRecord) => {
+        let blot = this.find(mutation.target, true);
         if (blot == null) return;
         if (blot.domNode === mutation.target) {
           if (mutation.type === 'childList') {
-            mark(Registry.find(mutation.previousSibling, false));
-            [].forEach.call(mutation.addedNodes, function(node: Node) {
-              let child = Registry.find(node, false);
+            mark(this.find(mutation.previousSibling, false));
+            [].forEach.call(mutation.addedNodes, (node: Node) => {
+              let child = this.find(node, false);
               mark(child, false);
               if (child instanceof ContainerBlot) {
                 child.children.forEach(function(grandChild: Blot) {
@@ -133,13 +164,13 @@ class ScrollBlot extends ContainerBlot {
         let blot = Registry.find(mutation.target, true);
         if (blot == null) return null;
         // @ts-ignore
-        if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+        if (blot.domNode[BLOT_LINK_KEY].mutations == null) {
           // @ts-ignore
-          blot.domNode[Registry.DATA_KEY].mutations = [mutation];
+          blot.domNode[BLOT_LINK_KEY].mutations = [mutation];
           return blot;
         } else {
           // @ts-ignore
-          blot.domNode[Registry.DATA_KEY].mutations.push(mutation);
+          blot.domNode[BLOT_LINK_KEY].mutations.push(mutation);
           return null;
         }
       })
@@ -148,16 +179,16 @@ class ScrollBlot extends ContainerBlot {
           blot == null ||
           blot === this ||
           //@ts-ignore
-          blot.domNode[Registry.DATA_KEY] == null
+          blot.domNode[BLOT_LINK_KEY] == null
         )
           return;
         // @ts-ignore
-        blot.update(blot.domNode[Registry.DATA_KEY].mutations || [], context);
+        blot.update(blot.domNode[BLOT_LINK_KEY].mutations || [], context);
       });
     // @ts-ignore
-    if (this.domNode[Registry.DATA_KEY].mutations != null) {
+    if (this.domNode[BLOT_LINK_KEY].mutations != null) {
       // @ts-ignore
-      super.update(this.domNode[Registry.DATA_KEY].mutations, context);
+      super.update(this.domNode[BLOT_LINK_KEY].mutations, context);
     }
     this.optimize(mutations, context);
   }

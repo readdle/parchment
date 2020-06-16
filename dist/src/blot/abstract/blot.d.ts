@@ -1,7 +1,16 @@
 import LinkedList from '../../collection/linked-list';
 import LinkedNode from '../../collection/linked-node';
+import Attributor from '../../attributor/attributor';
+import Scope from '../../scope';
+export interface BlotConstructor {
+    blotName: string;
+    className?: string;
+    tagName: string;
+    new (scroll: Root, node: Node, value?: any): Blot;
+    create(value?: any): Node;
+}
 export interface Blot extends LinkedNode {
-    scroll: Parent;
+    scroll: Root;
     parent: Parent;
     prev: Blot;
     next: Blot;
@@ -31,6 +40,11 @@ export interface Blot extends LinkedNode {
     update(mutations: MutationRecord[], context: {
         [key: string]: any;
     }): void;
+}
+export interface Root extends Parent {
+    create(input: Node | string | Scope, value?: any): Blot;
+    find(node: Node | null, bubble?: boolean): Blot | null;
+    query(query: string | Node | Scope, scope?: Scope): Attributor | BlotConstructor | null;
 }
 export interface Parent extends Blot {
     children: LinkedList<Blot>;

@@ -1,18 +1,18 @@
-import { Blot, Parent } from './blot';
-import * as Registry from '../../registry';
+import { Blot, Parent, Root } from './blot';
+import Scope from '../../scope';
 declare class ShadowBlot implements Blot {
+    scroll: Root;
     domNode: Node;
     static blotName: string;
     static className: string;
-    static scope: Registry.Scope;
+    static scope: Scope;
     static tagName: string;
     prev: Blot;
     next: Blot;
     parent: Parent;
-    scroll: Parent;
     readonly statics: any;
     static create(value: any): Node;
-    constructor(domNode: Node);
+    constructor(scroll: Root, domNode: Node);
     attach(): void;
     clone(): Blot;
     detach(): void;

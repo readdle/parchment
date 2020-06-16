@@ -1,10 +1,10 @@
 import AttributorStore from '../../attributor/store';
-import { Blot, Parent, Formattable } from './blot';
+import { Blot, Parent, Formattable, Root } from './blot';
 import ContainerBlot from './container';
 declare class FormatBlot extends ContainerBlot implements Formattable {
     protected attributes: AttributorStore;
-    static formats(domNode: HTMLElement): any;
-    constructor(domNode: Node);
+    static formats(domNode: HTMLElement, scroll: Root): any;
+    constructor(scroll: Root, domNode: Node);
     format(name: string, value: any): void;
     formats(): {
         [index: string]: any;

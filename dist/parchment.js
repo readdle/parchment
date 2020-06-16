@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,35 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ParchmentError = /** @class */ (function (_super) {
-    __extends(ParchmentError, _super);
-    function ParchmentError(message) {
-        var _this = this;
-        message = '[Parchment] ' + message;
-        _this = _super.call(this, message) || this;
-        _this.message = message;
-        _this.name = _this.constructor.name;
-        return _this;
-    }
-    return ParchmentError;
-}(Error));
-exports.ParchmentError = ParchmentError;
-var attributes = {};
-var classes = {};
-var tags = {};
-var types = {};
-exports.DATA_KEY = '__blot';
 var Scope;
 (function (Scope) {
     Scope[Scope["TYPE"] = 3] = "TYPE";
@@ -121,111 +93,8 @@ var Scope;
     Scope[Scope["BLOCK_ATTRIBUTE"] = 9] = "BLOCK_ATTRIBUTE";
     Scope[Scope["INLINE_ATTRIBUTE"] = 5] = "INLINE_ATTRIBUTE";
     Scope[Scope["ANY"] = 15] = "ANY";
-})(Scope = exports.Scope || (exports.Scope = {}));
-function create(input, value) {
-    var match = query(input);
-    if (match == null) {
-        throw new ParchmentError("Unable to create " + input + " blot");
-    }
-    var BlotClass = match;
-    var node = 
-    // @ts-ignore
-    input instanceof Node || input['nodeType'] === Node.TEXT_NODE ? input : BlotClass.create(value);
-    return new BlotClass(node, value);
-}
-exports.create = create;
-function find(node, bubble) {
-    if (bubble === void 0) { bubble = false; }
-    if (node == null)
-        return null;
-    // @ts-ignore
-    if (node[exports.DATA_KEY] != null)
-        return node[exports.DATA_KEY].blot;
-    if (bubble)
-        return find(node.parentNode, bubble);
-    return null;
-}
-exports.find = find;
-function query(query, scope) {
-    if (scope === void 0) { scope = Scope.ANY; }
-    var match;
-    if (typeof query === 'string') {
-        match = types[query] || attributes[query];
-        // @ts-ignore
-    }
-    else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
-        match = types['text'];
-    }
-    else if (typeof query === 'number') {
-        if (query & Scope.LEVEL & Scope.BLOCK) {
-            match = types['block'];
-        }
-        else if (query & Scope.LEVEL & Scope.INLINE) {
-            match = types['inline'];
-        }
-    }
-    else if (query instanceof HTMLElement) {
-        var names = (query.getAttribute('class') || '').split(/\s+/);
-        for (var i in names) {
-            match = classes[names[i]];
-            if (match)
-                break;
-        }
-        match = match || tags[query.tagName];
-    }
-    if (match == null)
-        return null;
-    // @ts-ignore
-    if (scope & Scope.LEVEL & match.scope && scope & Scope.TYPE & match.scope)
-        return match;
-    return null;
-}
-exports.query = query;
-function register() {
-    var Definitions = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        Definitions[_i] = arguments[_i];
-    }
-    if (Definitions.length > 1) {
-        return Definitions.map(function (d) {
-            return register(d);
-        });
-    }
-    var Definition = Definitions[0];
-    if (typeof Definition.blotName !== 'string' && typeof Definition.attrName !== 'string') {
-        throw new ParchmentError('Invalid definition');
-    }
-    else if (Definition.blotName === 'abstract') {
-        throw new ParchmentError('Cannot register abstract class');
-    }
-    types[Definition.blotName || Definition.attrName] = Definition;
-    if (typeof Definition.keyName === 'string') {
-        attributes[Definition.keyName] = Definition;
-    }
-    else {
-        if (Definition.className != null) {
-            classes[Definition.className] = Definition;
-        }
-        if (Definition.tagName != null) {
-            if (Array.isArray(Definition.tagName)) {
-                Definition.tagName = Definition.tagName.map(function (tagName) {
-                    return tagName.toUpperCase();
-                });
-            }
-            else {
-                Definition.tagName = Definition.tagName.toUpperCase();
-            }
-            var tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
-            tagNames.forEach(function (tag) {
-                if (tags[tag] == null || Definition.className == null) {
-                    tags[tag] = Definition;
-                }
-            });
-        }
-    }
-    return Definition;
-}
-exports.register = register;
+})(Scope || (Scope = {}));
+exports.default = Scope;
 
 
 /***/ }),
@@ -235,19 +104,19 @@ exports.register = register;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Registry = __webpack_require__(0);
+var scope_1 = __webpack_require__(0);
 var Attributor = /** @class */ (function () {
     function Attributor(attrName, keyName, options) {
         if (options === void 0) { options = {}; }
         this.attrName = attrName;
         this.keyName = keyName;
-        var attributeBit = Registry.Scope.TYPE & Registry.Scope.ATTRIBUTE;
+        var attributeBit = scope_1.default.TYPE & scope_1.default.ATTRIBUTE;
         if (options.scope != null) {
             // Ignore type bits, force attribute bit
-            this.scope = (options.scope & Registry.Scope.LEVEL) | attributeBit;
+            this.scope = (options.scope & scope_1.default.LEVEL) | attributeBit;
         }
         else {
-            this.scope = Registry.Scope.ATTRIBUTE;
+            this.scope = scope_1.default.ATTRIBUTE;
         }
         if (options.whitelist != null)
             this.whitelist = options.whitelist;
@@ -264,9 +133,6 @@ var Attributor = /** @class */ (function () {
         return true;
     };
     Attributor.prototype.canAdd = function (node, value) {
-        var match = Registry.query(node, Registry.Scope.BLOT & (this.scope | Registry.Scope.TYPE));
-        if (match == null)
-            return false;
         if (this.whitelist == null)
             return true;
         if (typeof value === 'string') {
@@ -297,6 +163,136 @@ exports.default = Attributor;
 
 "use strict";
 
+Object.defineProperty(exports, "__esModule", { value: true });
+var error_1 = __webpack_require__(4);
+var scope_1 = __webpack_require__(0);
+exports.BLOT_LINK_KEY = '__blot';
+var Registry = /** @class */ (function () {
+    function Registry() {
+        this.attributes = {};
+        this.classes = {};
+        this.tags = {};
+        this.types = {};
+    }
+    Registry.find = function (node, bubble) {
+        if (bubble === void 0) { bubble = false; }
+        if (node == null)
+            return null;
+        // @ts-ignore
+        if (node[exports.BLOT_LINK_KEY] != null)
+            return node[exports.BLOT_LINK_KEY].blot;
+        if (bubble)
+            return this.find(node.parentNode, bubble);
+        return null;
+    };
+    Registry.prototype.create = function (scroll, input, value) {
+        var match = this.query(input);
+        if (match == null) {
+            throw new error_1.default("Unable to create " + input + " blot");
+        }
+        var BlotClass = match;
+        var node = 
+        // @ts-ignore
+        input instanceof Node || input['nodeType'] === Node.TEXT_NODE
+            ? input
+            : BlotClass.create(value);
+        return new BlotClass(scroll, node, value);
+    };
+    Registry.prototype.find = function (node, bubble) {
+        if (bubble === void 0) { bubble = false; }
+        return Registry.find(node, bubble);
+    };
+    Registry.prototype.query = function (query, scope) {
+        if (scope === void 0) { scope = scope_1.default.ANY; }
+        var match;
+        if (typeof query === 'string') {
+            match = this.types[query] || this.attributes[query];
+            // @ts-ignore
+        }
+        else if (query instanceof Text || query['nodeType'] === Node.TEXT_NODE) {
+            match = this.types['text'];
+        }
+        else if (typeof query === 'number') {
+            if (query & scope_1.default.LEVEL & scope_1.default.BLOCK) {
+                match = this.types['block'];
+            }
+            else if (query & scope_1.default.LEVEL & scope_1.default.INLINE) {
+                match = this.types['inline'];
+            }
+        }
+        else if (query instanceof HTMLElement) {
+            var names = (query.getAttribute('class') || '').split(/\s+/);
+            for (var i in names) {
+                match = this.classes[names[i]];
+                if (match)
+                    break;
+            }
+            match = match || this.tags[query.tagName];
+        }
+        if (match == null)
+            return null;
+        // @ts-ignore
+        if (scope & scope_1.default.LEVEL & match.scope && scope & scope_1.default.TYPE & match.scope)
+            return match;
+        return null;
+    };
+    Registry.prototype.register = function () {
+        var _this = this;
+        var Definitions = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            Definitions[_i] = arguments[_i];
+        }
+        if (Definitions.length > 1) {
+            return Definitions.map(function (d) {
+                return _this.register(d);
+            });
+        }
+        var Definition = Definitions[0];
+        if (typeof Definition.blotName !== 'string' &&
+            typeof Definition.attrName !== 'string') {
+            throw new error_1.default('Invalid definition');
+        }
+        else if (Definition.blotName === 'abstract') {
+            throw new error_1.default('Cannot register abstract class');
+        }
+        this.types[Definition.blotName || Definition.attrName] = Definition;
+        if (typeof Definition.keyName === 'string') {
+            this.attributes[Definition.keyName] = Definition;
+        }
+        else {
+            if (Definition.className != null) {
+                this.classes[Definition.className] = Definition;
+            }
+            if (Definition.tagName != null) {
+                if (Array.isArray(Definition.tagName)) {
+                    Definition.tagName = Definition.tagName.map(function (tagName) {
+                        return tagName.toUpperCase();
+                    });
+                }
+                else {
+                    Definition.tagName = Definition.tagName.toUpperCase();
+                }
+                var tagNames = Array.isArray(Definition.tagName) ? Definition.tagName : [Definition.tagName];
+                tagNames.forEach(function (tag) {
+                    if (_this.tags[tag] == null || Definition.className == null) {
+                        _this.tags[tag] = Definition;
+                    }
+                });
+            }
+        }
+        return Definition;
+    };
+    return Registry;
+}());
+exports.default = Registry;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -308,13 +304,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var linked_list_1 = __webpack_require__(11);
-var shadow_1 = __webpack_require__(5);
-var Registry = __webpack_require__(0);
+var linked_list_1 = __webpack_require__(13);
+var shadow_1 = __webpack_require__(7);
+var error_1 = __webpack_require__(4);
+var scope_1 = __webpack_require__(0);
 var ContainerBlot = /** @class */ (function (_super) {
     __extends(ContainerBlot, _super);
-    function ContainerBlot(domNode) {
-        var _this = _super.call(this, domNode) || this;
+    function ContainerBlot(scroll, domNode) {
+        var _this = _super.call(this, scroll, domNode) || this;
         _this.build();
         return _this;
     }
@@ -336,11 +333,11 @@ var ContainerBlot = /** @class */ (function (_super) {
             .reverse()
             .forEach(function (node) {
             try {
-                var child = makeBlot(node);
+                var child = makeBlot(node, _this.scroll);
                 _this.insertBefore(child, _this.children.head || undefined);
             }
             catch (err) {
-                if (err instanceof Registry.ParchmentError)
+                if (err instanceof error_1.default)
                     return;
                 else
                     throw err;
@@ -402,7 +399,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             child.insertAt(offset, value, def);
         }
         else {
-            var blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+            var blot = def == null ? this.scroll.create('text', value) : this.scroll.create(value, def);
             this.appendChild(blot);
         }
     };
@@ -411,7 +408,7 @@ var ContainerBlot = /** @class */ (function (_super) {
             !this.statics.allowedChildren.some(function (child) {
                 return childBlot instanceof child;
             })) {
-            throw new Registry.ParchmentError("Cannot insert " + childBlot.statics.blotName + " into " + this.statics.blotName);
+            throw new error_1.default("Cannot insert " + childBlot.statics.blotName + " into " + this.statics.blotName);
         }
         childBlot.insertInto(this, refBlot);
     };
@@ -429,7 +426,7 @@ var ContainerBlot = /** @class */ (function (_super) {
         _super.prototype.optimize.call(this, context);
         if (this.children.length === 0) {
             if (this.statics.defaultChild != null) {
-                var child = Registry.create(this.statics.defaultChild);
+                var child = this.scroll.create(this.statics.defaultChild);
                 this.appendChild(child);
                 child.optimize(context);
             }
@@ -495,7 +492,7 @@ var ContainerBlot = /** @class */ (function (_super) {
                 mutation.oldValue === '' &&
                 mutation.target.nodeValue &&
                 mutation.target.nodeValue.length > 0 &&
-                Registry.find(mutation.target) == null) {
+                _this.scroll.find(mutation.target) == null) {
                 addedNodes.push.apply(addedNodes, [mutation.target]);
             }
         });
@@ -509,7 +506,7 @@ var ContainerBlot = /** @class */ (function (_super) {
                 document.body.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
                 return;
             }
-            var blot = Registry.find(node);
+            var blot = _this.scroll.find(node);
             if (blot == null)
                 return;
             if (blot.domNode.parentNode == null || blot.domNode.parentNode === _this.domNode) {
@@ -531,9 +528,9 @@ var ContainerBlot = /** @class */ (function (_super) {
             .forEach(function (node) {
             var refBlot = null;
             if (node.nextSibling != null) {
-                refBlot = Registry.find(node.nextSibling);
+                refBlot = _this.scroll.find(node.nextSibling);
             }
-            var blot = makeBlot(node);
+            var blot = makeBlot(node, _this.scroll);
             if (blot.next != refBlot || blot.next == null) {
                 if (blot.parent != null) {
                     blot.parent.removeChild(_this);
@@ -544,14 +541,14 @@ var ContainerBlot = /** @class */ (function (_super) {
     };
     return ContainerBlot;
 }(shadow_1.default));
-function makeBlot(node) {
-    var blot = Registry.find(node);
+function makeBlot(node, scroll) {
+    var blot = scroll.find(node);
     if (blot == null) {
         try {
-            blot = Registry.create(node);
+            blot = scroll.create(node);
         }
         catch (e) {
-            blot = Registry.create(Registry.Scope.INLINE);
+            blot = scroll.create(scope_1.default.INLINE);
             [].slice.call(node.childNodes).forEach(function (child) {
                 // @ts-ignore
                 blot.domNode.appendChild(child);
@@ -568,7 +565,39 @@ exports.default = ContainerBlot;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var ParchmentError = /** @class */ (function (_super) {
+    __extends(ParchmentError, _super);
+    function ParchmentError(message) {
+        var _this = this;
+        message = '[Parchment] ' + message;
+        _this = _super.call(this, message) || this;
+        _this.message = message;
+        _this.name = _this.constructor.name;
+        return _this;
+    }
+    return ParchmentError;
+}(Error));
+exports.default = ParchmentError;
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -585,17 +614,16 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var attributor_1 = __webpack_require__(1);
-var store_1 = __webpack_require__(6);
-var container_1 = __webpack_require__(2);
-var Registry = __webpack_require__(0);
+var store_1 = __webpack_require__(8);
+var container_1 = __webpack_require__(3);
 var FormatBlot = /** @class */ (function (_super) {
     __extends(FormatBlot, _super);
-    function FormatBlot(domNode) {
-        var _this = _super.call(this, domNode) || this;
+    function FormatBlot(scroll, domNode) {
+        var _this = _super.call(this, scroll, domNode) || this;
         _this.attributes = new store_1.default(_this.domNode);
         return _this;
     }
-    FormatBlot.formats = function (domNode) {
+    FormatBlot.formats = function (domNode, scroll) {
         if (typeof this.tagName === 'string') {
             return true;
         }
@@ -605,19 +633,19 @@ var FormatBlot = /** @class */ (function (_super) {
         return undefined;
     };
     FormatBlot.prototype.format = function (name, value) {
-        var format = Registry.query(name);
+        var format = this.scroll.query(name);
         if (format instanceof attributor_1.default) {
             this.attributes.attribute(format, value);
         }
         else if (value) {
-            if (format != null && (name !== this.statics.blotName || this.formats()[name] !== value)) {
+            if (name !== this.statics.blotName || this.formats()[name] !== value) {
                 this.replaceWith(name, value);
             }
         }
     };
     FormatBlot.prototype.formats = function () {
         var formats = this.attributes.values();
-        var format = this.statics.formats(this.domNode);
+        var format = this.statics.formats(this.domNode, this.scroll);
         if (format != null) {
             formats[this.statics.blotName] = format;
         }
@@ -650,7 +678,7 @@ exports.default = FormatBlot;
 
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -666,8 +694,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var shadow_1 = __webpack_require__(5);
-var Registry = __webpack_require__(0);
+var shadow_1 = __webpack_require__(7);
+var scope_1 = __webpack_require__(0);
 var LeafBlot = /** @class */ (function (_super) {
     __extends(LeafBlot, _super);
     function LeafBlot() {
@@ -693,25 +721,28 @@ var LeafBlot = /** @class */ (function (_super) {
         var _a;
         return _a = {}, _a[this.statics.blotName] = this.statics.value(this.domNode) || true, _a;
     };
-    LeafBlot.scope = Registry.Scope.INLINE_BLOT;
+    LeafBlot.scope = scope_1.default.INLINE_BLOT;
     return LeafBlot;
 }(shadow_1.default));
 exports.default = LeafBlot;
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Registry = __webpack_require__(0);
+var error_1 = __webpack_require__(4);
+var scope_1 = __webpack_require__(0);
+var registry_1 = __webpack_require__(2);
 var ShadowBlot = /** @class */ (function () {
-    function ShadowBlot(domNode) {
+    function ShadowBlot(scroll, domNode) {
+        this.scroll = scroll;
         this.domNode = domNode;
         // @ts-ignore
-        this.domNode[Registry.DATA_KEY] = { blot: this };
+        this.domNode[registry_1.BLOT_LINK_KEY] = { blot: this };
     }
     Object.defineProperty(ShadowBlot.prototype, "statics", {
         // Hack for accessing inherited static methods
@@ -723,7 +754,7 @@ var ShadowBlot = /** @class */ (function () {
     });
     ShadowBlot.create = function (value) {
         if (this.tagName == null) {
-            throw new Registry.ParchmentError('Blot definition missing tagName');
+            throw new error_1.default('Blot definition missing tagName');
         }
         var node;
         if (Array.isArray(this.tagName)) {
@@ -752,19 +783,17 @@ var ShadowBlot = /** @class */ (function () {
         return node;
     };
     ShadowBlot.prototype.attach = function () {
-        if (this.parent != null) {
-            this.scroll = this.parent.scroll;
-        }
+        // Nothing to do
     };
     ShadowBlot.prototype.clone = function () {
         var domNode = this.domNode.cloneNode(false);
-        return Registry.create(domNode);
+        return this.scroll.create(domNode);
     };
     ShadowBlot.prototype.detach = function () {
         if (this.parent != null)
             this.parent.removeChild(this);
         // @ts-ignore
-        delete this.domNode[Registry.DATA_KEY];
+        delete this.domNode[registry_1.BLOT_LINK_KEY];
     };
     ShadowBlot.prototype.deleteAt = function (index, length) {
         var blot = this.isolate(index, length);
@@ -772,17 +801,17 @@ var ShadowBlot = /** @class */ (function () {
     };
     ShadowBlot.prototype.formatAt = function (index, length, name, value) {
         var blot = this.isolate(index, length);
-        if (Registry.query(name, Registry.Scope.BLOT) != null && value) {
+        if (this.scroll.query(name, scope_1.default.BLOT) != null && value) {
             blot.wrap(name, value);
         }
-        else if (Registry.query(name, Registry.Scope.ATTRIBUTE) != null) {
-            var parent_1 = Registry.create(this.statics.scope);
+        else if (this.scroll.query(name, scope_1.default.ATTRIBUTE) != null) {
+            var parent_1 = this.scroll.create(this.statics.scope);
             blot.wrap(parent_1);
             parent_1.format(name, value);
         }
     };
     ShadowBlot.prototype.insertAt = function (index, value, def) {
-        var blot = def == null ? Registry.create('text', value) : Registry.create(value, def);
+        var blot = def == null ? this.scroll.create('text', value) : this.scroll.create(value, def);
         var ref = this.split(index);
         this.parent.insertBefore(blot, ref);
     };
@@ -820,9 +849,9 @@ var ShadowBlot = /** @class */ (function () {
     ShadowBlot.prototype.optimize = function (context) {
         // TODO clean up once we use WeakMap
         // @ts-ignore
-        if (this.domNode[Registry.DATA_KEY] != null) {
+        if (this.domNode[registry_1.BLOT_LINK_KEY] != null) {
             // @ts-ignore
-            delete this.domNode[Registry.DATA_KEY].mutations;
+            delete this.domNode[registry_1.BLOT_LINK_KEY].mutations;
         }
     };
     ShadowBlot.prototype.remove = function () {
@@ -838,7 +867,7 @@ var ShadowBlot = /** @class */ (function () {
         target.remove();
     };
     ShadowBlot.prototype.replaceWith = function (name, value) {
-        var replacement = typeof name === 'string' ? Registry.create(name, value) : name;
+        var replacement = typeof name === 'string' ? this.scroll.create(name, value) : name;
         replacement.replace(this);
         return replacement;
     };
@@ -849,7 +878,7 @@ var ShadowBlot = /** @class */ (function () {
         // Nothing to do by default
     };
     ShadowBlot.prototype.wrap = function (name, value) {
-        var wrapper = typeof name === 'string' ? Registry.create(name, value) : name;
+        var wrapper = typeof name === 'string' ? this.scroll.create(name, value) : name;
         if (this.parent != null) {
             this.parent.insertBefore(wrapper, this.next);
         }
@@ -863,16 +892,17 @@ exports.default = ShadowBlot;
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var attributor_1 = __webpack_require__(1);
-var class_1 = __webpack_require__(7);
-var style_1 = __webpack_require__(8);
-var Registry = __webpack_require__(0);
+var class_1 = __webpack_require__(9);
+var style_1 = __webpack_require__(10);
+var registry_1 = __webpack_require__(2);
+var scope_1 = __webpack_require__(0);
 var AttributorStore = /** @class */ (function () {
     function AttributorStore(domNode) {
         this.attributes = {};
@@ -899,6 +929,9 @@ var AttributorStore = /** @class */ (function () {
     AttributorStore.prototype.build = function () {
         var _this = this;
         this.attributes = {};
+        var blot = registry_1.default.find(this.domNode);
+        if (blot == null)
+            return;
         var attributes = attributor_1.default.keys(this.domNode);
         var classes = class_1.default.keys(this.domNode);
         var styles = style_1.default.keys(this.domNode);
@@ -906,7 +939,7 @@ var AttributorStore = /** @class */ (function () {
             .concat(classes)
             .concat(styles)
             .forEach(function (name) {
-            var attr = Registry.query(name, Registry.Scope.ATTRIBUTE);
+            var attr = blot.scroll.query(name, scope_1.default.ATTRIBUTE);
             if (attr instanceof attributor_1.default) {
                 _this.attributes[attr.attrName] = attr;
             }
@@ -940,7 +973,7 @@ exports.default = AttributorStore;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1003,7 +1036,7 @@ exports.default = ClassAttributor;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1066,38 +1099,36 @@ exports.default = StyleAttributor;
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(10);
+module.exports = __webpack_require__(12);
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var container_1 = __webpack_require__(2);
-var format_1 = __webpack_require__(3);
-var leaf_1 = __webpack_require__(4);
-var scroll_1 = __webpack_require__(12);
-var inline_1 = __webpack_require__(13);
-var block_1 = __webpack_require__(14);
-var embed_1 = __webpack_require__(15);
-var text_1 = __webpack_require__(16);
+var container_1 = __webpack_require__(3);
+var format_1 = __webpack_require__(5);
+var leaf_1 = __webpack_require__(6);
+var scroll_1 = __webpack_require__(14);
+var inline_1 = __webpack_require__(15);
+var block_1 = __webpack_require__(16);
+var embed_1 = __webpack_require__(17);
+var text_1 = __webpack_require__(18);
 var attributor_1 = __webpack_require__(1);
-var class_1 = __webpack_require__(7);
-var style_1 = __webpack_require__(8);
-var store_1 = __webpack_require__(6);
-var Registry = __webpack_require__(0);
+var class_1 = __webpack_require__(9);
+var style_1 = __webpack_require__(10);
+var store_1 = __webpack_require__(8);
+var registry_1 = __webpack_require__(2);
+var scope_1 = __webpack_require__(0);
 var Parchment = {
-    Scope: Registry.Scope,
-    create: Registry.create,
-    find: Registry.find,
-    query: Registry.query,
-    register: Registry.register,
+    Registry: registry_1.default,
+    Scope: scope_1.default,
     Container: container_1.default,
     Format: format_1.default,
     Leaf: leaf_1.default,
@@ -1117,7 +1148,7 @@ exports.default = Parchment;
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1258,7 +1289,7 @@ exports.default = LinkedList;
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1274,8 +1305,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var container_1 = __webpack_require__(2);
-var Registry = __webpack_require__(0);
+var container_1 = __webpack_require__(3);
+var registry_1 = __webpack_require__(2);
+var scope_1 = __webpack_require__(0);
 var OBSERVER_CONFIG = {
     attributes: true,
     characterData: true,
@@ -1286,9 +1318,13 @@ var OBSERVER_CONFIG = {
 var MAX_OPTIMIZE_ITERATIONS = 100;
 var ScrollBlot = /** @class */ (function (_super) {
     __extends(ScrollBlot, _super);
-    function ScrollBlot(node) {
-        var _this = _super.call(this, node) || this;
+    function ScrollBlot(registry, node) {
+        var _this = 
+        // @ts-ignore
+        _super.call(this, null, node) || this;
+        _this.registry = registry;
         _this.scroll = _this;
+        _this.build();
         _this.observer = new MutationObserver(function (mutations) {
             _this.update(mutations);
         });
@@ -1296,6 +1332,30 @@ var ScrollBlot = /** @class */ (function (_super) {
         _this.attach();
         return _this;
     }
+    ScrollBlot.prototype.create = function (input, value) {
+        return this.registry.create(this, input, value);
+    };
+    ScrollBlot.prototype.find = function (node, bubble) {
+        if (bubble === void 0) { bubble = false; }
+        return this.registry.find(node, bubble);
+    };
+    ScrollBlot.prototype.query = function (query, scope) {
+        if (scope === void 0) { scope = scope_1.default.ANY; }
+        return this.registry.query(query, scope);
+    };
+    ScrollBlot.prototype.register = function () {
+        var Definitions = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            Definitions[_i] = arguments[_i];
+        }
+        var _a;
+        return (_a = this.registry).register.apply(_a, Definitions);
+    };
+    ScrollBlot.prototype.build = function () {
+        if (this.scroll == null)
+            return;
+        _super.prototype.build.call(this);
+    };
     ScrollBlot.prototype.detach = function () {
         _super.prototype.detach.call(this);
         this.observer.disconnect();
@@ -1338,9 +1398,9 @@ var ScrollBlot = /** @class */ (function (_super) {
             if (blot.domNode.parentNode == null)
                 return;
             // @ts-ignore
-            if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+            if (blot.domNode[registry_1.BLOT_LINK_KEY].mutations == null) {
                 // @ts-ignore
-                blot.domNode[Registry.DATA_KEY].mutations = [];
+                blot.domNode[registry_1.BLOT_LINK_KEY].mutations = [];
             }
             if (markParent)
                 mark(blot.parent);
@@ -1349,9 +1409,9 @@ var ScrollBlot = /** @class */ (function (_super) {
             // Post-order traversal
             if (
             // @ts-ignore
-            blot.domNode[Registry.DATA_KEY] == null ||
+            blot.domNode[registry_1.BLOT_LINK_KEY] == null ||
                 // @ts-ignore
-                blot.domNode[Registry.DATA_KEY].mutations == null) {
+                blot.domNode[registry_1.BLOT_LINK_KEY].mutations == null) {
                 return;
             }
             if (blot instanceof container_1.default) {
@@ -1365,14 +1425,14 @@ var ScrollBlot = /** @class */ (function (_super) {
                 throw new Error('[Parchment] Maximum optimize iterations reached');
             }
             remaining.forEach(function (mutation) {
-                var blot = Registry.find(mutation.target, true);
+                var blot = _this.find(mutation.target, true);
                 if (blot == null)
                     return;
                 if (blot.domNode === mutation.target) {
                     if (mutation.type === 'childList') {
-                        mark(Registry.find(mutation.previousSibling, false));
+                        mark(_this.find(mutation.previousSibling, false));
                         [].forEach.call(mutation.addedNodes, function (node) {
-                            var child = Registry.find(node, false);
+                            var child = _this.find(node, false);
                             mark(child, false);
                             if (child instanceof container_1.default) {
                                 child.children.forEach(function (grandChild) {
@@ -1401,18 +1461,18 @@ var ScrollBlot = /** @class */ (function (_super) {
         // TODO use WeakMap
         mutations
             .map(function (mutation) {
-            var blot = Registry.find(mutation.target, true);
+            var blot = registry_1.default.find(mutation.target, true);
             if (blot == null)
                 return null;
             // @ts-ignore
-            if (blot.domNode[Registry.DATA_KEY].mutations == null) {
+            if (blot.domNode[registry_1.BLOT_LINK_KEY].mutations == null) {
                 // @ts-ignore
-                blot.domNode[Registry.DATA_KEY].mutations = [mutation];
+                blot.domNode[registry_1.BLOT_LINK_KEY].mutations = [mutation];
                 return blot;
             }
             else {
                 // @ts-ignore
-                blot.domNode[Registry.DATA_KEY].mutations.push(mutation);
+                blot.domNode[registry_1.BLOT_LINK_KEY].mutations.push(mutation);
                 return null;
             }
         })
@@ -1420,21 +1480,21 @@ var ScrollBlot = /** @class */ (function (_super) {
             if (blot == null ||
                 blot === _this ||
                 //@ts-ignore
-                blot.domNode[Registry.DATA_KEY] == null)
+                blot.domNode[registry_1.BLOT_LINK_KEY] == null)
                 return;
             // @ts-ignore
-            blot.update(blot.domNode[Registry.DATA_KEY].mutations || [], context);
+            blot.update(blot.domNode[registry_1.BLOT_LINK_KEY].mutations || [], context);
         });
         // @ts-ignore
-        if (this.domNode[Registry.DATA_KEY].mutations != null) {
+        if (this.domNode[registry_1.BLOT_LINK_KEY].mutations != null) {
             // @ts-ignore
-            _super.prototype.update.call(this, this.domNode[Registry.DATA_KEY].mutations, context);
+            _super.prototype.update.call(this, this.domNode[registry_1.BLOT_LINK_KEY].mutations, context);
         }
         this.optimize(mutations, context);
     };
     ScrollBlot.blotName = 'scroll';
     ScrollBlot.defaultChild = 'block';
-    ScrollBlot.scope = Registry.Scope.BLOCK_BLOT;
+    ScrollBlot.scope = scope_1.default.BLOCK_BLOT;
     ScrollBlot.tagName = 'DIV';
     return ScrollBlot;
 }(container_1.default));
@@ -1442,7 +1502,7 @@ exports.default = ScrollBlot;
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1458,8 +1518,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var format_1 = __webpack_require__(3);
-var Registry = __webpack_require__(0);
+var format_1 = __webpack_require__(5);
+var scope_1 = __webpack_require__(0);
 // Shallow object comparison
 function isEqual(obj1, obj2) {
     if (Object.keys(obj1).length !== Object.keys(obj2).length)
@@ -1477,10 +1537,14 @@ var InlineBlot = /** @class */ (function (_super) {
     function InlineBlot() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    InlineBlot.formats = function (domNode) {
+    InlineBlot.formats = function (domNode, scroll) {
         if (domNode.tagName === InlineBlot.tagName)
             return undefined;
-        return _super.formats.call(this, domNode);
+        var match = scroll.query(InlineBlot.blotName);
+        if (match != null && domNode.tagName === match.tagName) {
+            return undefined;
+        }
+        return _super.formats.call(this, domNode, scroll);
     };
     InlineBlot.prototype.format = function (name, value) {
         var _this = this;
@@ -1494,11 +1558,14 @@ var InlineBlot = /** @class */ (function (_super) {
             this.unwrap();
         }
         else {
+            var format = this.scroll.query(name, scope_1.default.INLINE);
+            if (format == null)
+                return;
             _super.prototype.format.call(this, name, value);
         }
     };
     InlineBlot.prototype.formatAt = function (index, length, name, value) {
-        if (this.formats()[name] != null || Registry.query(name, Registry.Scope.ATTRIBUTE)) {
+        if (this.formats()[name] != null || this.scroll.query(name, scope_1.default.ATTRIBUTE)) {
             var blot = this.isolate(index, length);
             blot.format(name, value);
         }
@@ -1519,135 +1586,11 @@ var InlineBlot = /** @class */ (function (_super) {
         }
     };
     InlineBlot.blotName = 'inline';
-    InlineBlot.scope = Registry.Scope.INLINE_BLOT;
+    InlineBlot.scope = scope_1.default.INLINE_BLOT;
     InlineBlot.tagName = 'SPAN';
     return InlineBlot;
 }(format_1.default));
 exports.default = InlineBlot;
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var format_1 = __webpack_require__(3);
-var Registry = __webpack_require__(0);
-var BlockBlot = /** @class */ (function (_super) {
-    __extends(BlockBlot, _super);
-    function BlockBlot() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    BlockBlot.formats = function (domNode) {
-        var tagName = Registry.query(BlockBlot.blotName).tagName;
-        if (domNode.tagName === tagName)
-            return undefined;
-        return _super.formats.call(this, domNode);
-    };
-    BlockBlot.prototype.format = function (name, value) {
-        if (Registry.query(name, Registry.Scope.BLOCK) == null) {
-            return;
-        }
-        else if (name === this.statics.blotName && !value) {
-            this.replaceWith(BlockBlot.blotName);
-        }
-        else {
-            _super.prototype.format.call(this, name, value);
-        }
-    };
-    BlockBlot.prototype.formatAt = function (index, length, name, value) {
-        if (Registry.query(name, Registry.Scope.BLOCK) != null) {
-            this.format(name, value);
-        }
-        else {
-            _super.prototype.formatAt.call(this, index, length, name, value);
-        }
-    };
-    BlockBlot.prototype.insertAt = function (index, value, def) {
-        if (def == null || Registry.query(value, Registry.Scope.INLINE) != null) {
-            // Insert text or inline
-            _super.prototype.insertAt.call(this, index, value, def);
-        }
-        else {
-            var after = this.split(index);
-            var blot = Registry.create(value, def);
-            after.parent.insertBefore(blot, after);
-        }
-    };
-    BlockBlot.prototype.update = function (mutations, context) {
-        if (navigator.userAgent.match(/Trident/)) {
-            this.build();
-        }
-        else {
-            _super.prototype.update.call(this, mutations, context);
-        }
-    };
-    BlockBlot.blotName = 'block';
-    BlockBlot.scope = Registry.Scope.BLOCK_BLOT;
-    BlockBlot.tagName = 'P';
-    return BlockBlot;
-}(format_1.default));
-exports.default = BlockBlot;
-
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var leaf_1 = __webpack_require__(4);
-var EmbedBlot = /** @class */ (function (_super) {
-    __extends(EmbedBlot, _super);
-    function EmbedBlot() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    EmbedBlot.formats = function (domNode) {
-        return undefined;
-    };
-    EmbedBlot.prototype.format = function (name, value) {
-        // super.formatAt wraps, which is what we want in general,
-        // but this allows subclasses to overwrite for formats
-        // that just apply to particular embeds
-        _super.prototype.formatAt.call(this, 0, this.length(), name, value);
-    };
-    EmbedBlot.prototype.formatAt = function (index, length, name, value) {
-        if (index === 0 && length === this.length()) {
-            this.format(name, value);
-        }
-        else {
-            _super.prototype.formatAt.call(this, index, length, name, value);
-        }
-    };
-    EmbedBlot.prototype.formats = function () {
-        return this.statics.formats(this.domNode);
-    };
-    return EmbedBlot;
-}(leaf_1.default));
-exports.default = EmbedBlot;
 
 
 /***/ }),
@@ -1667,12 +1610,138 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var leaf_1 = __webpack_require__(4);
-var Registry = __webpack_require__(0);
+var format_1 = __webpack_require__(5);
+var scope_1 = __webpack_require__(0);
+var BlockBlot = /** @class */ (function (_super) {
+    __extends(BlockBlot, _super);
+    function BlockBlot() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    BlockBlot.formats = function (domNode, scroll) {
+        var match = scroll.query(BlockBlot.blotName);
+        if (match != null && domNode.tagName === match.tagName) {
+            return undefined;
+        }
+        return _super.formats.call(this, domNode, scroll);
+    };
+    BlockBlot.prototype.format = function (name, value) {
+        var format = this.scroll.query(name, scope_1.default.BLOCK);
+        if (format == null) {
+            return;
+        }
+        else if (name === this.statics.blotName && !value) {
+            this.replaceWith(BlockBlot.blotName);
+        }
+        else {
+            _super.prototype.format.call(this, name, value);
+        }
+    };
+    BlockBlot.prototype.formatAt = function (index, length, name, value) {
+        if (this.scroll.query(name, scope_1.default.BLOCK) != null) {
+            this.format(name, value);
+        }
+        else {
+            _super.prototype.formatAt.call(this, index, length, name, value);
+        }
+    };
+    BlockBlot.prototype.insertAt = function (index, value, def) {
+        if (def == null || this.scroll.query(value, scope_1.default.INLINE) != null) {
+            // Insert text or inline
+            _super.prototype.insertAt.call(this, index, value, def);
+        }
+        else {
+            var after = this.split(index);
+            var blot = this.scroll.create(value, def);
+            after.parent.insertBefore(blot, after);
+        }
+    };
+    BlockBlot.prototype.update = function (mutations, context) {
+        if (navigator.userAgent.match(/Trident/)) {
+            this.build();
+        }
+        else {
+            _super.prototype.update.call(this, mutations, context);
+        }
+    };
+    BlockBlot.blotName = 'block';
+    BlockBlot.scope = scope_1.default.BLOCK_BLOT;
+    BlockBlot.tagName = 'P';
+    return BlockBlot;
+}(format_1.default));
+exports.default = BlockBlot;
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var leaf_1 = __webpack_require__(6);
+var EmbedBlot = /** @class */ (function (_super) {
+    __extends(EmbedBlot, _super);
+    function EmbedBlot() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    EmbedBlot.formats = function (domNode, scroll) {
+        return undefined;
+    };
+    EmbedBlot.prototype.format = function (name, value) {
+        // super.formatAt wraps, which is what we want in general,
+        // but this allows subclasses to overwrite for formats
+        // that just apply to particular embeds
+        _super.prototype.formatAt.call(this, 0, this.length(), name, value);
+    };
+    EmbedBlot.prototype.formatAt = function (index, length, name, value) {
+        if (index === 0 && length === this.length()) {
+            this.format(name, value);
+        }
+        else {
+            _super.prototype.formatAt.call(this, index, length, name, value);
+        }
+    };
+    EmbedBlot.prototype.formats = function () {
+        return this.statics.formats(this.domNode, this.scroll);
+    };
+    return EmbedBlot;
+}(leaf_1.default));
+exports.default = EmbedBlot;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var leaf_1 = __webpack_require__(6);
+var scope_1 = __webpack_require__(0);
 var TextBlot = /** @class */ (function (_super) {
     __extends(TextBlot, _super);
-    function TextBlot(node) {
-        var _this = _super.call(this, node) || this;
+    function TextBlot(scroll, node) {
+        var _this = _super.call(this, scroll, node) || this;
         _this.text = _this.statics.value(_this.domNode);
         return _this;
     }
@@ -1730,7 +1799,7 @@ var TextBlot = /** @class */ (function (_super) {
             if (index === this.length())
                 return this.next;
         }
-        var after = Registry.create(this.domNode.splitText(index));
+        var after = this.scroll.create(this.domNode.splitText(index));
         this.parent.insertBefore(after, this.next);
         this.text = this.statics.value(this.domNode);
         return after;
@@ -1747,7 +1816,7 @@ var TextBlot = /** @class */ (function (_super) {
         return this.text;
     };
     TextBlot.blotName = 'text';
-    TextBlot.scope = Registry.Scope.INLINE_BLOT;
+    TextBlot.scope = scope_1.default.INLINE_BLOT;
     return TextBlot;
 }(leaf_1.default));
 exports.default = TextBlot;

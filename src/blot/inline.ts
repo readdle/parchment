@@ -1,7 +1,9 @@
+import { Root, BlotConstructor } from './abstract/blot';
 import FormatBlot from './abstract/format';
 import LeafBlot from './abstract/leaf';
 import ShadowBlot from './abstract/shadow';
-import * as Registry from '../registry';
+import Registry from '../registry';
+import Scope from '../scope';
 
 // Shallow object comparison
 function isEqual(obj1: Object, obj2: Object): boolean {
@@ -16,12 +18,16 @@ function isEqual(obj1: Object, obj2: Object): boolean {
 
 class InlineBlot extends FormatBlot {
   static blotName = 'inline';
-  static scope = Registry.Scope.INLINE_BLOT;
+  static scope = Scope.INLINE_BLOT;
   static tagName = 'SPAN';
 
-  static formats(domNode: HTMLElement): any {
+  static formats(domNode: HTMLElement, scroll: Root): any {
     if (domNode.tagName === InlineBlot.tagName) return undefined;
-    return super.formats(domNode);
+    const match = scroll.query(InlineBlot.blotName);
+    if (match != null && domNode.tagName === (<BlotConstructor>match).tagName) {
+      return undefined;
+    }
+    return super.formats(domNode, scroll);
   }
 
   format(name: string, value: any) {
@@ -34,12 +40,14 @@ class InlineBlot extends FormatBlot {
       });
       this.unwrap();
     } else {
+      const format = this.scroll.query(name, Scope.INLINE);
+      if (format == null) return;
       super.format(name, value);
     }
   }
 
   formatAt(index: number, length: number, name: string, value: any): void {
-    if (this.formats()[name] != null || Registry.query(name, Registry.Scope.ATTRIBUTE)) {
+    if (this.formats()[name] != null || this.scroll.query(name, Scope.ATTRIBUTE)) {
       let blot = <InlineBlot>this.isolate(index, length);
       blot.format(name, value);
     } else {

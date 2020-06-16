@@ -1,12 +1,12 @@
-import * as Registry from '../registry';
+import Scope from '../scope';
 export interface AttributorOptions {
-    scope?: Registry.Scope;
+    scope?: Scope;
     whitelist?: string[];
 }
 export default class Attributor {
     attrName: string;
     keyName: string;
-    scope: Registry.Scope;
+    scope: Scope;
     whitelist: string[] | undefined;
     static keys(node: HTMLElement): string[];
     constructor(attrName: string, keyName: string, options?: AttributorOptions);
